@@ -1,1 +1,71 @@
+#!/bin/bash
+
+path=$1 #there is only one argument passed in 
+
+D=`ls -a $path | sort` #gets files in the path in lexicographic order
+
+IFS=$'\n' #to account for file names with spaces in it
+
+declare -a FirstArray #holds the hidden files
+declare -a SecondArray #holds the rest of the regular files
+declare -a Array #holds all of the regular files in order
+
+let num1=0 #initialize the counter for the arrays
+let num2=0
+let num=0
+
+for file in $D #going through all the files
+do
+    if [ ! -L "$path/$file" ] #if not a symbolic link
+    then
+	if [ -f "$path/$file" ] #if  regular file in the directory
+	then
+	    if [ ! -r "$path/$file" ] #if it is not readable
+	    then
+		echo "ERROR. This file is not readable to you."
+	    elif [[ "$file" == [.]* ]] # hidden files are above other
+	                           #special characters
+	    then
+		FirstArray[$num1]="$path/$file" #if hidden file
+		let num1=num1+1
+	    else
+	        SecondArray[$num2]="$path/$file" #any other reg file
+		let num2=num2+1
+	    fi
+	fi
+    fi
+done
+
+for i in "${FirstArray[@]}" #loops through all the hidden files
+do
+    Array[$num]=$i #adds them to final array
+    let num=num+1 #increment counter
+done
+
+for j in "${SecondArray[@]}" #loops through the other reg files
+do
+    Array[$num]=$j #adds them behind the hidden files
+    let num=num+1
+done
+
+
+for first in "${Array[@]}" #nested for loop to compare the files
+do
+    for second in "${Array[@]}"
+    do
+	if [ "$first" != "$second" ] #if they are not the same file
+	then
+	    let inode1=`ls -i "$first" | awk '{print $1}'` #get the inode nums
+	    let inode2=`ls -i "$second" | awk '{print $1}'`
+	    if [ $inode1 != $inode2 ] #if they are not hardlinked
+	    then
+		cmp -s "$first" "$second" #compare the contents of files
+		if [ $? -eq 0 ] #if exit status 0, they are the same file
+		then
+		    ln -f "$first" "$second" #hardlink the second to first
+		fi
+	    fi
+	fi
+    done
+done
 

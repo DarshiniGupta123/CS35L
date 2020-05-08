@@ -1,0 +1,169 @@
+(1) First to make sure I'm in standard C, I ran the command locale locale.
+Since the output of LC_CTYPE was en_US.UTF-8, I ran the shell command 
+export LC_ALL='C' and rechecked LC-CTYPE after running the locale command
+again, this time LC_CTYPE="C" showing up.
+
+(2) Next, to get the file words onto my working directory, I used the sort
+command to sort the contents of the file /usr/share/dict/words and 
+redirected the sorted words into a file called words in my working
+directory. The specific command being sort /usr/share/dict/words > words.
+
+(3) Then, to get the webpage I'm looking at, I use the wget command.
+wget https://web.cs.ucla.edu/classes/fall18/cs35L/assign/assign2.html.
+Since I have to make it into a txt file, I use the command 
+cp assign2.html assign2.txt to make a copy of the file but with the 
+extension being txt.
+
+(4) Then, I ran the command tr -c 'A-Za-z' '[\n*]' < assign2.txt 
+(assign2.txt being the input for the tr command) and its output involved
+a new line seperating each word, or in some cases many lines in between
+of words because -c stand for the complement and the complement of 
+letters are symbol characters, so all the symbol characters were replaced 
+new line characters.
+
+(5) Next, I ran the command tr -cs 'A-Za-z' '[\n*]' < assign2.txt, which
+had a similar output as the last command, except there were multiple new
+lines in between of the words, and there was one word on each line. This 
+is because this command had -cs instead of just -c, and the extra s takes 
+the output of the previous command and pushed everything togather, 
+eliminating any extra lines.
+
+(6) I ran the command tr -cs 'A-Za-z' '[\n*]' | sort < assign2.txt, which
+is wrong because the tr command needs the assign2.txt before the sort can
+occur. So instead I ran the command tr -cs 'A-Za-z' '[\n*]' < assign2.txt |
+sort. This command does what the previous command does, having each word on
+a new line, except it sorts it in ASCII order, which is similar to
+alphabetical order.
+
+(7) Next, I ran the command tr -cs 'A-Za-z' '[\n*]' < assign2.txt |
+sort -u, which has the same output as the command I ran previously(without
+the -u) except this command gets rid of duplicate words.
+ 
+(8) The next command tr -cs 'A-Za-z' '[\n*]' < assign2.txt | sort -u | comm
+ - words has a noticeably different output than the previous command due 
+to the comm - words, which is a comparison command and compares the assign2.txt
+file with the wordsfile and separates words into three different columns, the
+first with words unique to assign2.txt, the second with words unique to the
+words file, and the third with words from both files. The second column has a 
+lot more words than either of the other columns, since the words file has so 
+many more words than the assign2.txt file.
+
+(9) The last tr command I ran was r -cs 'A-Za-z' '[\n*]' < assign2.txt | 
+sort -u | comm -23 - words is very similar to the previous command I did except
+the -23 added to the command gets rid of the second and third column that was
+present in the previous command and now the output only shows the words that 
+only appear in the first file.
+
+(10) Now we need to get a copy of all the Hawaiin words on a webpage and to 
+do so, we get the copy of a webpage, by using the command
+wget http://mauimapp.com/moolelo/hwnwdseng.htm.
+
+(11) Then we need to make a shell script that gets all the Hawaiian words from
+that webpage in a lexicographic order.
+
+This first command I use is egrep "<td>.*</td>" | which gets all the stuff in 
+between of <td> and </td> since all the words are in between of these HTML 
+tags. I need to use egrep because the | is an extended regular expression.
+
+The second command I use is sed 's/<[^>]*>//g' | which deletes all of the 
+remaining HTML tags.
+
+Next, I use sed '/^\s*$/d' | which deletes any extra lines in between of
+the words since there is a word on each line now.
+
+The next command I use is sed '1~2d' | which deletes every other line starting
+with the first line since the order of the words is English Hawaiian English, 
+with each word on a separate line. This way only the Hawaiian words remain.
+
+Now I use the command tr '[:upper:]' '[:lower:]' | which lowers all the 
+letters from uppercase to lowercase because in the spec it says to treat
+uppercase letters as lowercase letters.
+
+Next, the command tr -s "\`" "\'" | changes all the okina to apostrophes
+because in the spec it says for the sake of the simplicity to do so as such.
+
+The next command I use is tr -s ',' '[\n*]' | which replaces any commas with
+new lines and then squeezes the entire page together since we are supposed to
+treat words seperated by commas as two words.
+
+The tr -s " " "\n" | command is to replace any blank spaces with a 
+new line since words with spaces are to be considered two words.
+
+The next command I used is grep -x "[pkl\'mnwlhaeiou ]\+" | and this takes 
+care of the words that have the - and the ? by deleteing any lines without
+any of the characters in the brackets.
+
+The next command tr -cs "A-za-z\'" '[\n*]' | replaces anything that is not
+a letter or an apostrophe with a new line then gets rid of any extra lines
+that might have been caused by the command. This command gets rid of any 
+hyphens and question marks.
+
+The next command I use is tr -d '[:blank:]' which removes any extra blank 
+spaces that might be in the file.
+
+The command tr -cs "pkl\'mnwlhaeiou" "[\n*]" | makes any non Hawaiian character
+a new line so there is no word in the file that contains a non Hawaiian word.
+
+The next command, sed '/^\s*$/d' | gets rid of any extra empty lines that 
+have been added
+
+The last command I use is sort -u which sorts all the words in the file in
+lexicographic order.
+
+(12) Now to build the file, hwords, we need to make build words executable 
+by running the command chmod +x buildwords, since we do not have permission. 
+Then we use cat hwnwdseng.htm | ./buildwords > hwords which pipes the 
+webpage to the buildwords shellscript and then redirects the stdout to hwords.
+
+(13) After modifying the command in the spec to check for mispelled 
+Hawaiian words and also changing everything to lowercase since hwords is
+in lowercase, I got the shell command:
+cat filename | tr '[:upper:]' '[:lower:]' | tr -cs "pkl\'mnwlhaeiou" "[\n*]" |
+sort -u | comm -23 - hwords
+
+(14) To count the number of mispelled English words on this page,
+I use the command:
+cat assign2.html | tr '[:upper:]' '[:lower:]' | tr -cs "A-Za-z"
+"[\n*]" | sort -u | comm -23 - words > misspelledE
+After counting all of the words in the file misspelledE, I got 38
+misspelled English words.
+
+(15) To count the number of misspelled Hawaiian words on the assignment
+2 page, I used the command:
+cat assign2.html | tr '[:upper:]' '[:lower:]' | tr -cs "pkl\'mnwlhaeiou"
+"[\n*]" | sort -u | comm -23 - hwords > misspelledH
+and I got 200 misspelled Hawaiian words. This is a lot more than the 
+English words because the English dictionary had a lot more words than
+the Hawaiian dictionary.
+
+(16) To find words that are correctly spelled in Hawaiian but not in 
+English I used the command:
+cat misspelledE | tr '[:upper:]' '[:lower:]' | tr -cs "pkl\'mnwlhaeiou" 
+"[\n*]" | sort -u | comm -12 - hwords and I pipe the mispelled English
+words I found in the previous command and compare it with the Hawaiian
+dictionary. I use -12 because I only want the third column, which 
+shows the similar words with the dictionary and my file.
+The words that were misspelled in English but not Hawaiian are:
+
+e
+halau
+i
+lau
+po
+wiki
+
+(17) To find the words that are misspelled in Hawaiian but not in English
+I used a similar command as in the previous question:
+cat misspelledH | tr '[:upper:]' '[:lower:]' | tr -cs "A-Za-z"
+"[\n*]" | sort -u | comm -12 - words > missHcorrE
+
+Some examples of words that were misspelled in English but not Hawaiian are:
+
+ample
+hawaiian
+hen
+link 
+how
+line
+man 
+men

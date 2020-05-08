@@ -1,0 +1,17 @@
+#!/bin/bash
+
+
+egrep "<td>.*</td>" |
+sed 's/<[^>]*>//g' |
+sed '/^\s*$/d' |
+sed '1~2d' |    
+tr '[:upper:]' '[:lower:]' | 
+tr -s "\`" "\'" |
+tr -s ',' '[\n*]' |
+tr -s " " "\n" |
+grep -x "[pkl\'mnwlhaeiou ]\+" |
+tr -cs "A-za-z\'" '[\n*]' |
+tr -d '[:blank:]' |
+tr -cs "pkl\'mnwlhaeiou" "[\n*]" |
+sed '/^\s*$/d' |
+sort -u
