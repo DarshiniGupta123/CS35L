@@ -1,0 +1,241 @@
+(1) First to grab the package, I used the command:
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz 
+for the tarball and to get the signature I used the command:
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-8.29.tar.xz.sig
+and lastly for the GNU keyring, I used the command:
+wget https://ftp.gnu.org/gnu/gnu-keyring.gpg
+
+When I ran the shell command --verify --keyring ./gnu-keyring.gpg
+coreutils-8.29.tar.xz.sig, I got the warning that this key was not
+certifiied with a trusted signature, since I don't have a signature.
+
+To untar the package I used the command tar -xf coreutils-8.29.tar.xz
+and I use the -xf instead of -xzvf since instead of a .gz file I
+had a .xz file, and this created coreutils-8.29 in my directory.
+
+(2) First, I cd coreutils-8.29, so its my current directory and
+configure is in that directory. Then I use the command
+./configure --prefix=/u/cs/ugrad/darshini/coreutilsInstall
+to install a copy in the temporary directory coreutilsInstall.
+Then I use the command make, which compiles all the program code
+and creates executables. Then I finally use the command make install.
+
+(3) I reproduced the bug on my machine with the unmodified version
+of coreutils by first using cd /u/cs/ugrad/darshini/coreutilsInstall/bin
+since the buggy ls is in the bin of the modified directory,
+and then use the command ./ls -a -A
+
+output of ./ls -a -A:
+
+ .          csplit      fold      mktemp     readlink    stat       uname
+ ..         cut         groups    mv         realpath    stdbuf     unexpand
+'['         date        head      nice       rm          stty       uniq
+ b2sum      dd          hostid    nl         rmdir       sum        unlink
+ base32     df          id        nohup      runcon      sync       uptime
+ base64     dir         install   nproc      seq         tac        users
+ basename   dircolors   join      numfmt     sha1sum     tail       vdir
+ cat        dirname     kill      od         sha224sum   tee        wc
+ chcon      du          link      paste      sha256sum   test       who
+ chgrp      echo        ln        pathchk    sha384sum   timeout    whoami
+ chmod      env         logname   pinky      sha512sum   touch      yes
+ chown      expand      ls        pr         shred       tr
+ chroot     expr        md5sum    printenv   shuf        true
+ cksum      factor      mkdir     printf     sleep       truncate
+ comm       false       mkfifo    ptx        sort        tsort
+ cp         fmt         mknod     pwd        split       tty
+
+(4) To apply the patch first I do the commands:
+cd ..
+cd ..
+To get back to the home directory, and then use the command:
+cd coreutils-8.29 since the patch should be applied in this directory.
+I create a new file (patch_file) with emacs patch_file and the
+patching command I use is:
+patch -p1 < patch_file
+I used -p1 so a/tests/local.mk and b/tests/local.mk becomes tests/local.mk.
+When I used the command the patch was successful but I got some errors in
+the patching news.
+
+patching news:
+
+patching file NEWS
+Hunk #1 FAILED at 4.
+1 out of 1 hunk FAILED -- saving rejects to file NEWS.rej
+patching file src/ls.c
+Hunk #1 succeeded at 1900 (offset -3 lines).
+patching file tests/local.mk
+patching file tests/ls/a-option.sh
+
+(5) To build this modified version I use the command make again.
+However, I got the error that automake-1.15 is missing. To fix
+this problem, I used autoreconf -f -i. The make command goes through all
+of the directories with the executable files and to see if their have
+been any changes. However, when I used the make this time, only the
+files that have been modified from the original are recompiled.
+
+(6) To check the modified ls program, first I use the command 
+cd coreutils-8.29 and then I used the command: cd src because the src
+directory contains the ls.c file, the modified ls. To test this ls
+I used the command ./ls -a -A, and the output did not include the .
+and .. files. 
+
+./ls -a -A output:
+'['                   hostid              seq
+ b2sum                hostid.c            seq.c
+ base32               hostid.o            seq.o
+ base64               hostname.c          set-fields.c
+ base64.c             id                  set-fields.h
+ basename             id.c                set-fields.o
+ basename.c           id.o                sha1sum
+ basename.o           install.c           sha224sum
+ blake2               ioblksize.h         sha256sum
+ cat                  join                sha384sum
+ cat.c                join.c              sha512sum
+ cat.o                join.o              shred
+ chcon                kill                shred.c
+ chcon.c              kill.c              shred.o
+ chcon.o              kill.o              shuf
+ chgrp                lbracket.c          shuf.c
+ chgrp.c              lbracket.o          shuf.o
+ chgrp.o              libstdbuf.c         single-binary.mk
+ chmod                libstdbuf.so        sleep
+ chmod.c              libver.a            sleep.c
+ chmod.o              link                sleep.o
+ chown                link.c              sort
+ chown.c              link.o              sort.c
+ chown-core.c         ln                  sort.o
+ chown-core.h         ln.c                split
+ chown-core.o         ln.o                split.c
+ chown.o              local.mk            split.o
+ chroot               logname             src_b2sum-md5sum.o
+ chroot.c             logname.c           src_base32-base64.o
+ chroot.o             logname.o           src_base64-base64.o
+ cksum                longlong.h          src_ginstall-copy.o
+ cksum.c              ls                  src_ginstall-cp-hash.o
+ cksum.o              ls.c                src_ginstall-extent-scan.o
+ comm                 ls.c.orig           src_ginstall-force-link.o
+ comm.c               ls-dir.c            src_ginstall-install.o
+ comm.o               ls-dir.o            src_ginstall-prog-fprintf.o
+ copy.c               ls.h                src_ginstall-selinux.o
+ copy.h               ls-ls.c             src_libstdbuf_so-libstdbuf.o
+ copy.o               ls-ls.o             src_md5sum-md5sum.o
+ coreutils-arch.c     ls.o                src_sha1sum-md5sum.o
+ coreutils.c          ls-vdir.c           src_sha224sum-md5sum.o
+ coreutils-dir.c      ls-vdir.o           src_sha256sum-md5sum.o
+ coreutils.h          make-prime-list     src_sha384sum-md5sum.o
+ coreutils-vdir.c     make-prime-list.c   src_sha512sum-md5sum.o
+ cp                   make-prime-list.o   stat
+ cp.c                 md5sum              stat.c
+ cp-hash.c            md5sum.c            stat.o
+ cp-hash.h            mkdir               stdbuf
+ cp-hash.o            mkdir.c             stdbuf.c
+ cp.o                 mkdir.o             stdbuf.o
+ csplit               mkfifo              stty
+ csplit.c             mkfifo.c            stty.c
+ csplit.o             mkfifo.o            stty.o
+ cu-progs.mk          mknod               sum
+ cut                  mknod.c             sum.c
+ cut.c                mknod.o             sum.o
+ cut.o                mktemp              sync
+ date                 mktemp.c            sync.c
+ date.c               mktemp.o            sync.o
+ date.o               mv                  system.h
+ dcgen                mv.c                tac
+ dd                   mv.o                tac.c
+ dd.c                 nice                tac.o
+ dd.o                 nice.c              tac-pipe.c
+ .deps                nice.o              tail
+ df                   nl                  tail.c
+ df.c                 nl.c                tail.o
+ df.o                 nl.o                tee
+ die.h                nohup               tee.c
+ dir                  nohup.c             tee.o
+ dircolors            nohup.o             test
+ dircolors.c          nproc               test.c
+ dircolors.h          nproc.c             testfile
+ dircolors.hin        nproc.o             test.o
+ dircolors.o          numfmt              timeout
+ dirname              numfmt.c            timeout.c
+ dirname.c            numfmt.o            timeout.o
+ dirname.o            od                  touch
+ .dirstamp            od.c                touch.c
+ du                   od.o                touch.o
+ du.c                 operand2sig.c       tr
+ du.o                 operand2sig.h       tr.c
+ echo                 operand2sig.o       tr.o
+ echo.c               paste               true
+ echo.o               paste.c             true.c
+ env                  paste.o             true.o
+ env.c                pathchk             truncate
+ env.o                pathchk.c           truncate.c
+ expand               pathchk.o           truncate.o
+ expand.c             pinky               tsort
+ expand-common.c      pinky.c             tsort.c
+ expand-common.h      pinky.o             tsort.o
+ expand-common.o      pr                  tty
+ expand.o             pr.c                tty.c
+ expr                 primes.h            tty.o
+ expr.c               printenv            uname
+ expr.o               printenv.c          uname-arch.c
+ extent-scan.c        printenv.o          uname.c
+ extent-scan.h        printf              uname.h
+ extent-scan.o        printf.c            uname.o
+ extract-magic        printf.o            uname-uname.c
+ factor               pr.o                uname-uname.o
+ factor.c             prog-fprintf.c      unexpand
+ factor.o             prog-fprintf.h      unexpand.c
+ false                prog-fprintf.o      unexpand.o
+ false.c              ptx                 uniq
+ false.o              ptx.c               uniq.c
+ fiemap.h             ptx.o               uniq.o
+ find-mount-point.c   pwd                 unlink
+ find-mount-point.h   pwd.c               unlink.c
+ find-mount-point.o   pwd.o               unlink.o
+ fmt                  readlink            uptime
+ fmt.c                readlink.c          uptime.c
+ fmt.o                readlink.o          uptime.o
+ fold                 realpath            users
+ fold.c               realpath.c          users.c
+ fold.o               realpath.o          users.o
+ force-link.c         relpath.c           vdir
+ force-link.h         relpath.h           version.c
+ force-link.o         relpath.o           version.h
+ fs.h                 remove.c            version.o
+ fs-is-local.h        remove.h            wc
+ getlimits            remove.o            wc.c
+ getlimits.c          rm                  wc.o
+ getlimits.o          rm.c                who
+ ginstall             rmdir               whoami
+ group-list.c         rmdir.c             whoami.c
+ group-list.h         rmdir.o             whoami.o
+ group-list.o         rm.o                who.c
+ groups               runcon              who.o
+ groups.c             runcon.c            yes
+ groups.o             runcon.o            yes.c
+ head                 selinux.c           yes.o
+ head.c               selinux.h
+ head.o               selinux.o
+
+To test the buggy version of ls I cd into /coreutilsInstall/bin
+because this is where the installed ls is located. When running 
+this version with the command ./ls -a -A, the . and .. files are 
+still there
+
+./ls -a -A in coreutilsInstall output:
+
+.          csplit      fold      mktemp     readlink    stat       uname
+ ..         cut         groups    mv         realpath    stdbuf     unexpand
+'['         date        head      nice       rm          stty       uniq
+ b2sum      dd          hostid    nl         rmdir       sum        unlink
+ base32     df          id        nohup      runcon      sync       uptime
+ base64     dir         install   nproc      seq         tac        users
+ basename   dircolors   join      numfmt     sha1sum     tail       vdir
+ cat        dirname     kill      od         sha224sum   tee        wc
+ chcon      du          link      paste      sha256sum   test       who
+ chgrp      echo        ln        pathchk    sha384sum   timeout    whoami
+ chmod      env         logname   pinky      sha512sum   touch      yes
+ chown      expand      ls        pr         shred       tr
+ chroot     expr        md5sum    printenv   shuf        true
+ cksum      factor      mkdir     printf     sleep       truncate
+ comm       false       mkfifo    ptx        sort        tsort
+ cp         fmt         mknod     pwd        split       tty    

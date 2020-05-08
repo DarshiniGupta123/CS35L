@@ -1,1 +1,42 @@
+(Q1) To check the perfomance of ls, I first went to the directory
+~/coreutils-8.29/src, which contains the modified ls. In this directory,
+I run the command: time ./ls -a -A to see how much time this ls takes.
 
+Trial 1:          Trial 2:
+real: 0m0.004s    real: 0m0.005s
+user: 0m0.002s    user: 0m0.001s
+sys: 0m0.002s     sys: 0m0.002s
+
+
+Then, in the ~/coreutilsInstall/bin, which has the buggy ls, I run the 
+command: time ./ls -a -A, and I got
+
+Trial 1:          Trial 2:
+real: 0m0.002s    real: 0m0.003s
+user: 0m0.002s    user: 0m0.001s
+sys: 0m0.000s     sys: 0m0.001s
+
+There is not much difference between the two ls because the time complexity 
+does not change much due to the necessity of looping through all of the 
+files still and the modified ls just has the extra step of looking for
+. and .. which accounts for the minimally slower time.
+
+(Q2) This patched Coreutils now accounts for the -a -A problem, however
+there may still be countless other options that override both of these
+two options and cause bugs. The company would still have to look out for
+things like the -f flag, which overrides both the -a and -A and 
+outputs all regular files.
+
+(Q3) After running the command: ./randline.py /dev/null (which is 
+an empty file) I get the error, IndexError: list index out of range.
+This error comes up because the file is empty and there are no args 
+and even at index 0, it would be out of range since there is nothing.
+
+(Q4) When randline.py is invoked with Python 3 instead of Python , I
+get a different error: 
+IOError as (errno, strerror): Syntax Error : invalid syntax
+This is because Python 2 and Python 3 support some different things and
+this format (errno, strerror) is only supported by Python 2. Python 3
+does not allow the iteration over exceptions. In Python 2, anything that
+iterated through has the ability to be unpacked with the automatic
+tuple unpacking.
