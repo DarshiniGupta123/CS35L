@@ -1,1 +1,77 @@
+(1) First I get the coreutils 8.6 by using the command:
 
+wget https://www.gnu.org/software/coreutils/coreutils.html
+
+(2) Then I preappended /usr/local/cs/bin to my path by using the command:
+
+export PATH=/usr/local/cs/bin:$PATH
+
+(3) Then I used the command sort --version, which is stated in the 
+spec to see what version I am using. The output I get is:
+
+sort (GNU coreutils) 8.30
+Copyright (C) 2018 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Written by Mike Haertel and Paul Eggert.
+
+So the version is 8.30, which is a new enough version, since 8.30 
+a newer version than 8.6
+
+(4) Then I need to generate a file with 2^24 random single-precision 
+floating point numbers using the command 
+
+od -An -t fF -N $((2**24)) < /dev/urandom > randFile.txt
+
+I used fF being for single precision floating point numbers. The 
+$((2**24)) is to represent 2^24 instead of using the constant, when
+the expression is simplified.
+
+(5) Then, to remove the addresses and have each floating point number 
+on a seperate line and remove any blank spaces, I use the command
+tr '[:space:]' '\n' < randFile.txt | sed '{/^$/d}' > random.txt
+
+And the modified text is now in random.txt
+
+(6) Then I use the time -p command to check the time differences 
+between no threads, 1 thread, 2 threads, 4 threads, and 8 threads
+
+time -p /usr/local/cs/bin/sort -g random.txt > /dev/null
+
+real 8.11
+user 43.45
+sys 0.21
+
+time -p /usr/local/cs/bin/sort -g --parallel=1 random.txt > /dev/null
+
+real 40.26
+user 40.17
+sys 0.08
+
+time -p /usr/local/cs/bin/sort -g --parallel=2 random.txt > /dev/null
+
+real 21.57
+user 40.91
+sys 0.13
+
+time -p /usr/local/cs/bin/sort -g --parallel=4 random.txt > /dev/null
+
+real 13.26
+user 44.13
+sys 0.14
+
+(10) time -p /usr/local/cs/bin/sort -g --parallel=8 random.txt > /dev/null
+
+real 8.84
+user 46.51
+sys 0.19
+
+The regular sort and the parallelized sort with 8 threads seem to have
+similar real times, with the parallelized sort with 1 thread having the 
+highest real time and decreasing with the increasing number of threads. 
+The user time is the lowest with the parallelized sort with 1 thread and
+increases with an increasing number of threads. The sys time, system 
+time, also generally increases with the number of threads since more
+threads means more system calls.
