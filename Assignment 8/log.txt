@@ -1,0 +1,99 @@
+Connecting BeagleBone:
+(1) First I connected my USB cable to my laptop and the other end to my 
+BeagleBone. Then I opened the START.htm file, where I installed the 
+drivers into my Beaglebone. However, when I tried to install these drivers,
+this was failing and I realized I had to disable the Windows 10 driver 
+signature. After disabling this I was able to successfully install the 
+drivers.
+ 
+(2) Then I had to log into Linux, with my host being 192.168.7.2 and root
+as the username and no password. Then I started the connmanctl terminal 
+with sudo connmanctl. To turn on the wifi I entered the command enable 
+wifi. Then I did the command scan wifi and then the services command
+which outputted many wifi connections but I was looking for the one
+with CR3760-wifi. After I found my respective connection I turned agent on
+and then used the command connect to the wifi connection I found with the 
+services output. When asked for the passphrase, I enter 3760ClassNet and then
+exit out of the connmanctl terminal using quit.
+
+(3) I found the IP address of my BeagleBone by running ifconfig.
+
+inet address: 10.97.85.81
+
+(4) I also had to do the commands sudo apt-get update, 
+sudo apt-get install xauth, sudo apt-get install xvfb
+
+(5) Then I went to /etc/ssh/ssh_config and /etc/ssh/sshd_config an changed
+the X11 options from no to yes.
+
+(6) After this I installed Firefox to my Beaglebone using the command
+sudo apt-get install firefox-esr-l10-en-gb
+
+Server:
+(1) First I generated a public/private key pair using the code: ssh-keygen.
+When askes about the default location, I just pressed Enter and then it
+prompted me to enter a passphrase and confirm my passphrase.
+
+Passphrase: password
+
+It saved this pair in the files ~/.ssh/is_rsa and ~/.ssh/id_rsa-pub.
+
+(2) Then I created an account for the client on the server using the command:
+sudo useradd -d /home/homehome -m turker. After I added this, I have to create
+a password for the user using the command: sudo passwd turker
+
+Username: turker
+Password: darshini
+
+(3) Then I created a .ssh directory for the new user using the commands
+cd /home/homehome, which puts me in the directory I created the account for 
+my client and then I use the command sudo mkdir .ssh, which creates the .ssh
+directory so now the user can login to my Beaglebone and run commands.
+
+(4) I have to change permissions and ownership for the .ssh directory so the 
+user can run commands, so now the user can read, write and execute.
+
+sudo chown –R username .ssh
+sudo chmod 700 .ssh
+
+Client:
+(1) Since I already generated my public and private key pair in the server
+part, I skip this step.
+
+(2) Then I copy my public key to the server for key-based authentication
+and I use the username that my partner or the server set up for me, which
+is user1 and the IP address of my partner's Beaglebone.
+
+command: ssh-copy-id -i user1@10.97.85.226
+
+It then prompts me for the password the server had entered while setting 
+up the username for me.
+
+username: user1
+password: shubhrose
+
+After entering this password once, I do not need to do this again, which I 
+can check when I ssh into my partner's Beaglebone
+
+ssh user1@10.97.85.226
+
+I am not required to enter the password anymore, however I am required to 
+enter my passphrase each time I want to enter so it can verify me. To 
+fix this I used the command ssh-add, however this gave me an error 
+about not being able to connect to an authentication agent. So I had to first
+run the command, eval `ssh-agent -s`, and then run the command 
+ssh-add, which them prompted me for the passphrase I set up when I first
+made my public/private keys.
+
+Passphrase: password
+
+Now I could ssh to the server without entering anything. Now I ran the 
+command ssh -X user1@10.97.85.226 and then entered the command: firefox.
+However, I was getting the error: DISPLAY not found. However, when
+I entered the server using ssh -Y user1@10.97.85.226 I was successfully
+able to run the command firefox with a Firefox tab opening. This outcome 
+is possible due to the fact that -X protects and any program you will run
+will have minimum priveleges. This may be breaking the path and also it
+may prevent you from accessing some essential files, for example something
+to do with the display. -Y on the other hand goes full force and allows you 
+all these things, allowing the pipe to work.

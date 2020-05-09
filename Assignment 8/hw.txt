@@ -1,0 +1,29 @@
+(1) The resulting network is still secure even if the opposing team has been 
+overlooking the bytes across the network. Before the data was sent over the 
+network, the data is encrypted with the public key, so that the encryptions 
+can only be deciphered with a second key known to the recipient, also known
+as the private key.
+
+If the other teams had tapped into our keyboards after I completed all client
+server setups then the resulting network could be compromised and not reliable
+since the password that I typed exposed and used to figure out the data and
+the data may not be reliable anymore. However, since no one can access the 
+private key, the would not be able to decrypt the data and it would still be 
+secure.
+
+If I am booting off USB and I assume the other teams had physical control
+of the USB, then they would have access to the public key and private key, 
+which would allow them to decrypt the data and modify things as they wish
+using my keys to decrypt an encrypt.
+
+(2) The gpg --verify command in the following instructions does not really 
+verify that I personally created the file in question because the 
+gpg --verfiy command only looks at the public key and detached signature, and
+if the file had been modified in some way in the transferring of the file, 
+the public key would also be changed and the verification would still
+work even though the file had been modified.
+
+One way to fix this problem is through a third party company that keeps
+track of the who actually created the file, and checks whether the file has 
+been modified in some way or another, since we do not have access to a 
+private key. This would maintain the integrity of the file. 
